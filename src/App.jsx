@@ -4,8 +4,19 @@ import BillForm from './components/BillForm'
 import BillList from './components/BillList'
 import SpendingChart from './components/SpendingChart'
 import { Bell, IndianRupee, Lightbulb } from './components/Icons'
+import AuthPage from './components/AuthPage'
 
 function App() {
+  const [authed, setAuthed] = useState(() => {
+    return sessionStorage.getItem('bm-authed') === 'true'
+  })
+
+  const handleAuth = ({ mode, name, email }) => {
+    sessionStorage.setItem('bm-authed', 'true')
+    setAuthed(true)
+    toast.success(mode === 'signup' ? `Welcome, ${name || email}! 🎉` : `Welcome back, ${email}!`)
+  }
+
   const [bills, setBills] = useState(() => {
     try {
       const saved = localStorage.getItem('bill-minder-bills');
@@ -94,6 +105,8 @@ function App() {
 
   const totalMonthly = bills.reduce((sum, b) => sum + parseFloat(b.amount || 0), 0);
 
+  if (!authed) return <AuthPage onAuth={handleAuth} />
+
   return (
     <div className="min-h-screen bg-pop-yellow p-4 md:p-10 font-sans text-black selection:bg-pop-pink selection:text-white overflow-x-hidden relative">
       <Toaster position="bottom-center" />
@@ -107,6 +120,14 @@ function App() {
             <p className="text-xl md:text-2xl font-bold uppercase tracking-widest bg-black text-white px-6 py-2 shadow-[8px_8px_0px_0px_#ff6f91] flex items-center gap-2 justify-center">
               <Bell size={20} /> Don't Get Cut Off!
             </p>
+          </div>
+          <div className="mt-4">
+            <button
+              onClick={() => { sessionStorage.removeItem('bm-authed'); setAuthed(false) }}
+              className="text-xs font-black uppercase tracking-widest border-2 border-black px-4 py-1.5 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:bg-black hover:text-pop-yellow transition-colors"
+            >
+              Log Out
+            </button>
           </div>
         </header>
 
