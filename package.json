@@ -2,7 +2,7 @@
     "name": "bill-minder",
     "private": true,
     "version": "0.0.0",
-    "homepage": "https://gokila-s.github.io/billminder",
+    "homepage": "https://billminder.vercel.app",
     "type": "module",
     "scripts": {
         "dev": "vite",
