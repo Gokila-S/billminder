@@ -21,17 +21,57 @@ function simpleHash(str) {
   return `bm$${hash.toString(36)}$${str.length}`
 }
 
+// ─── Storage helpers (safe in non-browser envs) ─────────────────────────────
+const storage = (() => {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) return null
+    const testKey = '__bm_test__'
+    window.localStorage.setItem(testKey, '1')
+    window.localStorage.removeItem(testKey)
+    return window.localStorage
+  } catch {
+    return null
+  }
+})()
+
+function readStorage(key) {
+  if (!storage) return null
+  try {
+    return storage.getItem(key)
+  } catch {
+    return null
+  }
+}
+
+function writeStorage(key, value) {
+  if (!storage) return
+  try {
+    storage.setItem(key, value)
+  } catch {
+    // Ignore write errors (quota, disabled storage)
+  }
+}
+
+function removeStorage(key) {
+  if (!storage) return
+  try {
+    storage.removeItem(key)
+  } catch {
+    // Ignore remove errors
+  }
+}
+
 // ─── Users store ─────────────────────────────────────────────────────────────
 function getUsers() {
   try {
-    return JSON.parse(localStorage.getItem('bm-users')) || []
+    return JSON.parse(readStorage('bm-users')) || []
   } catch {
     return []
   }
 }
 
 function saveUsers(users) {
-  localStorage.setItem('bm-users', JSON.stringify(users))
+  writeStorage('bm-users', JSON.stringify(users))
 }
 
 function findUserByEmail(email) {
@@ -94,7 +134,7 @@ export function loginUser({ email, password }) {
 
 // ─── Session ─────────────────────────────────────────────────────────────────
 function setSession(user) {
-  localStorage.setItem('bm-session', JSON.stringify({
+  writeStorage('bm-session', JSON.stringify({
     userId: user.id,
     email: user.email,
     name: user.name,
@@ -103,7 +143,7 @@ function setSession(user) {
 
 export function getSession() {
   try {
-    const session = JSON.parse(localStorage.getItem('bm-session'))
+    const session = JSON.parse(readStorage('bm-session'))
     if (session && session.userId) return session
     return null
   } catch {
@@ -112,7 +152,7 @@ export function getSession() {
 }
 
 export function logout() {
-  localStorage.removeItem('bm-session')
+  removeStorage('bm-session')
 }
 
 export function isLoggedIn() {
@@ -123,7 +163,7 @@ export function isLoggedIn() {
 export function getUserBills(userId) {
   try {
     const key = `bm-bills-${userId}`
-    return JSON.parse(localStorage.getItem(key)) || []
+    return JSON.parse(readStorage(key)) || []
   } catch {
     return []
   }
@@ -131,7 +171,7 @@ export function getUserBills(userId) {
 
 export function saveUserBills(userId, bills) {
   const key = `bm-bills-${userId}`
-  localStorage.setItem(key, JSON.stringify(bills))
+  writeStorage(key, JSON.stringify(bills))
 }
 
 // ─── Password reset (localStorage-based – shows "security question" style) ──
@@ -168,7 +208,7 @@ export function updateProfile({ userId, name }) {
   const session = getSession()
   if (session && session.userId === userId) {
     session.name = name.trim()
-    localStorage.setItem('bm-session', JSON.stringify(session))
+    writeStorage('bm-session', JSON.stringify(session))
   }
 
   return { ok: true }

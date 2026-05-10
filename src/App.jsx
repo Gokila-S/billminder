@@ -48,7 +48,7 @@ function App() {
     } else {
       setBills([])
     }
-  }, [session])
+  }, [bills, session])
 
   // On-load due-today check
   useEffect(() => {

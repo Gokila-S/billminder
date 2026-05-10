@@ -522,11 +522,6 @@ export default function AuthPage({ onAuth }) {
           </button>
         </p>
       </div>
-
-      {/* Footer */}
-      <p className="absolute bottom-4 font-mono text-xs font-bold uppercase opacity-30 tracking-widest">
-        © 2026 BillMinder
-      </p>
     </div>
   )
 }
